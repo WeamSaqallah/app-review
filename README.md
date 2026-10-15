@@ -5,7 +5,7 @@
 [![Plotly](https://img.shields.io/badge/Plotly-5.20+-3F4F75.svg)](https://plotly.com/)
 [![SQLite](https://img.shields.io/badge/Database-SQLite3-003B57.svg)](https://www.sqlite.org/)
 [![Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini-8E75C2.svg)](https://ai.google.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#-license)
 
 An end-to-end, enterprise-grade **Market Intelligence & Competitor Research System** that discovers competing mobile apps directly from the **Google Play Store**, extracts and normalizes hundreds of real customer reviews safely, categorizes feedback sentiment, persists relational data into **SQLite**, generates an automated multi-sheet **Excel report**, and feeds 1-star and 2-star friction points into **Google Gemini LLM** for executive-level market gap analysis.
 

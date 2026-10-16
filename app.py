@@ -179,16 +179,19 @@ with st.sidebar:
     
     country_code = st.selectbox(
         "Store Market Country",
-        options=["us", "gb", "ca", "de", "fr", "ae", "sa"],
+        options=["ps", "sa", "ae", "eg", "jo", "us", "gb", "ca", "de", "fr"],
         index=0,
         format_func=lambda x: {
+            "ps": "🇵🇸 Palestine (فلسطين)",
+            "sa": "🇸🇦 Saudi Arabia",
+            "ae": "🇦🇪 United Arab Emirates",
+            "eg": "🇪🇬 Egypt",
+            "jo": "🇯🇴 Jordan",
             "us": "🇺🇸 United States",
             "gb": "🇬🇧 United Kingdom",
             "ca": "🇨🇦 Canada",
             "de": "🇩🇪 Germany",
-            "fr": "🇫🇷 France",
-            "ae": "🇦🇪 United Arab Emirates",
-            "sa": "🇸🇦 Saudi Arabia"
+            "fr": "🇫🇷 France"
         }.get(x, x.upper())
     )
 

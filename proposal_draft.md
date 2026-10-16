@@ -55,7 +55,7 @@ Instead of dumping raw reviews, our pipeline sorts 1-star and 2-star reviews by 
 
 ### **2. Repository & Live Streamlit Demo**
 
-- **GitHub Repository**: `https://github.com/[YOUR_GITHUB_USERNAME]/google-play-competitor-intelligence`
+- **GitHub Repository**: `https://github.com/WeamSaqallah/app-review`
 - **Live Streamlit Cloud Interactive App**: `https://[YOUR_STREAMLIT_SUBDOMAIN].streamlit.app`
 
 *(Note: The codebase is fully modular, documented with an executive README, clean `requirements.txt`, and ready for zero-friction cloud deployment).*
@@ -72,5 +72,5 @@ I would love to walk you through a live demonstration of the dashboard and discu
 Looking forward to speaking with you!
 
 Best regards,  
-**[Your Name / Your Agency Name]**  
+**WEAM M.M. SAQALLAH**  
 *Python Data Engineer & AI Specialist*

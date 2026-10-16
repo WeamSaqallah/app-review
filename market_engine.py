@@ -20,7 +20,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 
 from google_play_scraper import search, reviews, Sort
 
-# Configure logging
+# Configure logging 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("MarketEngine")
 
@@ -31,7 +31,7 @@ DEFAULT_DB_PATH = "competitor_intelligence.db"
 # 1. Dynamic App Discovery
 # ==============================================================================
 
-def search_apps(query: str, n_hits: int = 12, lang: str = "en", country: str = "us") -> List[Dict[str, Any]]:
+def search_apps(query: str, n_hits: int = 12, lang: str = "en", country: str = "ps") -> List[Dict[str, Any]]:
     """
     Search Google Play Store for apps matching query keyword or category.
     Returns cleaned list of matching apps with title, developer, score, icon, and url.
@@ -40,10 +40,11 @@ def search_apps(query: str, n_hits: int = 12, lang: str = "en", country: str = "
         return []
 
     query = query.strip()
-    logger.info(f"Searching Google Play Store for: '{query}' (limit: {n_hits})")
+    country = (country or "ps").lower()
+    logger.info(f"Searching Google Play Store for: '{query}' (country: {country}, limit: {n_hits})")
     
-    try:
-        raw_results = search(
+    try: # الحماية من الانهيار 
+        raw_results = search( # search دالة بحث خاصة بمكتبة google_play_scraper
             query,
             lang=lang,
             country=country,
@@ -76,7 +77,7 @@ def search_apps(query: str, n_hits: int = 12, lang: str = "en", country: str = "
             "icon": item.get("icon", ""),
             "url": item.get("url", f"https://play.google.com/store/apps/details?id={app_id}"),
             "genre": item.get("genre", "General"),
-            "currency": item.get("currency", "USD"),
+            "currency": item.get("currency", "ILS"),
             "price": item.get("price", 0.0),
             "free": item.get("free", True),
         })
@@ -122,7 +123,7 @@ def categorize_sentiment(score: int, text: str = "") -> str:
     try:
         rating = int(score)
     except (ValueError, TypeError):
-        rating = 3
+        rating = 3 # قيمة افتراضية في حال وجود خطأ في البيانات  
 
     if rating >= 4:
         return "Positive"
@@ -137,14 +138,15 @@ def scrape_app_reviews(
     app_title: str = "",
     count: int = 200,
     lang: str = "en",
-    country: str = "us"
+    country: str = "PS"
 ) -> List[Dict[str, Any]]:
     """
     Scrapes recent customer reviews safely without memory bottlenecks.
     Enforces count bounds (typically 150 to 300 reviews).
     """
     count = max(50, min(count, 500))  # safe bounding
-    logger.info(f"Scraping {count} reviews for app: {app_id} ('{app_title}')")
+    country = (country or "ps").lower()
+    logger.info(f"Scraping {count} reviews for app: {app_id} ('{app_title}') [Country: {country}]")
 
     collected_reviews: List[Dict[str, Any]] = []
 
@@ -198,7 +200,7 @@ def process_selected_competitors(
     selected_apps: List[Dict[str, Any]],
     reviews_per_app: int = 200,
     lang: str = "en",
-    country: str = "us"
+    country: str = "ps"
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Coordinates multi-app scraping for 2 to 4 competitors.

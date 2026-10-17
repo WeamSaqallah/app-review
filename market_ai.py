@@ -58,14 +58,12 @@ def generate_market_gap_insights(
     reviews_df: pd.DataFrame,
     api_key: Optional[str] = None,
     model_name: str = "gemini-2.5-flash",
-    app_category: str = "Mobile App"
+    app_category: str = "Mobile App",
+    output_lang: str = "en"
 ) -> str:
     """
     Executes strategic market gap analysis using Gemini API.
-    Identifies:
-    1. Top recurring bugs / UX friction across competitors.
-    2. High-demand features that users are begging for which competitors lack.
-    3. Actionable strategic recommendations to position our upcoming app for dominance.
+    Supports English ("en") or Arabic ("ar") executive reporting.
     """
     # 1. Resolve API Key
     effective_api_key = api_key or os.environ.get("GEMINI_API_KEY")
@@ -74,6 +72,12 @@ def generate_market_gap_insights(
     pain_points_text = prepare_pain_points_prompt(reviews_df)
     
     if "No 1-star or 2-star" in pain_points_text or "No customer review" in pain_points_text:
+        if output_lang == "ar":
+            return (
+                "### ⚠️ لا توجد مراجعات سلبية كافية\n"
+                "التطبيقات المختارة لا تحتوي على مراجعات كافية بنجمة أو نجمتين في هذه العينة. "
+                "يرجى زيادة حجم عينة السحب (مثلاً 250-300 مراجعة) أو اختيار منافسين إضافيين."
+            )
         return (
             "### ⚠️ Insufficient Negative Feedback\n"
             "The selected competitors have little or no 1-star and 2-star reviews in this sample. "
@@ -82,9 +86,15 @@ def generate_market_gap_insights(
 
     # 3. Handle offline / unauthenticated mode gracefully
     if not effective_api_key:
-        return generate_offline_fallback_insights(reviews_df)
+        return generate_offline_fallback_insights(reviews_df, output_lang=output_lang)
 
     # 4. Construct System & Task Prompt
+    lang_instruction = (
+        "CRITICAL REQUIREMENT: Output the entire final report in elegant, professional Arabic (اللغة العربية الفصحى التنفيذية الإدارية). All section titles, bullet points, and strategic explanations must be in Arabic."
+        if output_lang == "ar"
+        else "Maintain an executive, sharp, and data-driven English tone. Use bold key terms and clean bullet points."
+    )
+
     prompt = f"""
 You are an elite Product Strategy & Market Intelligence Director advising a tech startup that is developing a next-generation {app_category}.
 
@@ -111,7 +121,7 @@ Analyze these complaints systematically and provide a concise, high-impact execu
 ### 4. ⚡ "Trojan Horse" Go-To-Market Feature
 - Propose one standout, highly desirable killer feature that directly solves the #1 collective complaint of these competitor apps and can drive immediate viral user migration.
 
-Maintain an executive, sharp, and data-driven tone. Use bold key terms and clean bullet points.
+{lang_instruction}
 """
 
     try:
@@ -142,17 +152,21 @@ Maintain an executive, sharp, and data-driven tone. Use bold key terms and clean
 
     except Exception as e:
         logger.error(f"Error calling Gemini API: {e}")
-        return (
+        error_msg = (
+            f"### ⚠️ تنبيه الاتصال بـ Gemini API\n"
+            f"حدث خطأ أثناء الاتصال بـ Gemini API: `{str(e)}`.\n\n"
+            "الانتقال إلى التحليل الإحصائي الآلي البديل:\n\n"
+            if output_lang == "ar" else
             f"### ⚠️ Gemini API Connection Notice\n"
             f"An error occurred while communicating with Gemini API: `{str(e)}`.\n\n"
             "Falling back to automated rule-based sentiment and keyword extraction:\n\n"
-            + generate_offline_fallback_insights(reviews_df)
         )
+        return error_msg + generate_offline_fallback_insights(reviews_df, output_lang=output_lang)
 
-    return generate_offline_fallback_insights(reviews_df)
+    return generate_offline_fallback_insights(reviews_df, output_lang=output_lang)
 
 
-def generate_offline_fallback_insights(reviews_df: pd.DataFrame) -> str:
+def generate_offline_fallback_insights(reviews_df: pd.DataFrame, output_lang: str = "en") -> str:
     """
     Fallback synthesis generated automatically from frequency statistics
     when Gemini API key is not configured or in offline demo mode.
@@ -165,10 +179,33 @@ def generate_offline_fallback_insights(reviews_df: pd.DataFrame) -> str:
     if not pain_df.empty and "clean_content" in pain_df.columns:
         sorted_pain = pain_df.sort_values(by="thumbs_up_count", ascending=False).head(5)
         for _, r in sorted_pain.iterrows():
-            top_voted.append(f"- **{r.get('app_title')}** ({r.get('score')}★, {r.get('thumbs_up_count', 0)} upvotes): \"{r.get('clean_content')[:140]}...\"")
+            vote_unit = "تأييد" if output_lang == "ar" else "upvotes"
+            top_voted.append(f"- **{r.get('app_title')}** ({r.get('score')}★, {r.get('thumbs_up_count', 0)} {vote_unit}): \"{r.get('clean_content')[:140]}...\"")
+
+    if output_lang == "ar":
+        top_voted_str = "\n".join(top_voted) if top_voted else "- لم يتم تحديد شكاوى ذات تأييد مرتفع."
+        return f"""
+> ℹ️ **تنبيه مفتاح Gemini API**: أدخل مفتاح Google Gemini في الشريط الجانبي لتفعيل التحليل العصبي الذكي الحي. أدناه معاينة إحصائية مبنية على **{total_negatives} مراجعة سلبية** عبر **{apps_count} تطبيقات منافسة**.
+
+### 1. 🚨 أبرز نقاط الضعف والمشاكل المتكررة لدى المنافسين (تحليل خوارزمي)
+- **الاحتكار المالي وإزعاج الاشتراكات**: شكاوى متكررة بخصوص حجب الميزات خلف بوابات دفع مفاجئة وتجديد الاشتراكات التلقائي غير الموضح.
+- **مشاكل التحديثات الأخيرة**: تقارير كثيرة تفيد بأن التحديثات الأخيرة عطلت وظائف كانت تعمل بسلاسة وتسببت في بطء الواجهة.
+- **عدم استقرار المزامنة والحسابات**: تسجيل خروج مفاجئ، فشل مزامنة البيانات السحابية، واستهلاك بطارية مرتفع في الخلفية.
+
+### 2. 💡 شكاوى وتظلمات المستخدمين الأكثر تأييداً (حسب تصويت المجتمع)
+{top_voted_str}
+
+### 3. 🎯 توجيهات استراتيجية لتطبيقنا القادم
+1. **خطة مجانية سلسة**: إتاحة الوظائف الأساسية دون بوابات دفع خانقة لاقتناص المستخدمين الغاضبين من المنافسين.
+2. **العمل دون اتصال (Offline-First)**: بناء نظام حفظ محلي (SQLite) ليظل التطبيق سريعاً حتى عند انقطاع الإنترنت.
+3. **شفافية الخصوصية والأذونات**: تجنب طلب أذونات غير مبررة؛ وإبراز الأمان وحرية البيانات في متجر التطبيقات.
+4. **دعم فني فوري وإصلاح سريع**: توفير وسيلة مباشرة داخل التطبيق للإبلاغ عن المشاكل وسرعة استجابة المطورين.
+
+### 4. ⚡ التموضع الاستراتيجي المقترح للتطبيق الجديد
+طرح تطبيقنا بصفته **"البديل السريع، الخفيف، الخالي من الإعلانات والمزعجات"** والذي يحترم وقت المستخدم وخصوصيته.
+"""
 
     top_voted_str = "\n".join(top_voted) if top_voted else "- No specific high-upvote complaints identified."
-
     return f"""
 > ℹ️ **Gemini API Key Notice**: Enter your Google Gemini API key in the sidebar to activate real-time LLM neural synthesis. Below is an algorithmic preview based on **{total_negatives} negative reviews** across **{apps_count} competitors**.
 

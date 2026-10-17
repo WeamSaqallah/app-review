@@ -56,7 +56,7 @@ Instead of dumping raw reviews, our pipeline sorts 1-star and 2-star reviews by 
 ### **2. Repository & Live Streamlit Demo**
 
 - **GitHub Repository**: `https://github.com/WeamSaqallah/app-review`
-- **Live Streamlit Cloud Interactive App**: `https://[YOUR_STREAMLIT_SUBDOMAIN].streamlit.app`
+- **Live Streamlit Cloud Interactive App**: `https://app-review-akvqq4iymnbcaeo3kj3aow.streamlit.app/`
 
 *(Note: The codebase is fully modular, documented with an executive README, clean `requirements.txt`, and ready for zero-friction cloud deployment).*
 
